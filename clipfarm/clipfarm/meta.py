@@ -18,8 +18,16 @@ Return JSON only: {"titles":["","",""],"description":"","hashtags":["#..."]}"""
 
 
 def _quote(text: str, n: int = 52) -> str:
-    sents = re.split(r"(?<=[.!?])\s+", text.strip())
-    best = max(sents, key=lambda s: (s.count("!") + s.count("?"), -abs(len(s) - 40))) if sents else text
+    from .moments import PROFANITY
+
+    sents = [x.strip() for x in re.split(r"(?<=[.!?])\s+", text.strip()) if x.strip()]
+
+    def rank(s: str):
+        nw = len(s.split())
+        return (0 if PROFANITY.search(s) else 1, 1 if 3 <= nw <= 10 else 0, s.count("!") + s.count("?"),
+                -abs(len(s) - 38))
+
+    best = max(sents, key=rank) if sents else text
     best = best.strip().strip('"')
     if len(best) > n:
         best = best[: n - 1].rsplit(" ", 1)[0] + "…"
@@ -65,5 +73,9 @@ def build(moment: dict, job: dict, profile: dict, lang: str) -> dict:
     for m in camp.get("required_mentions") or []:
         if m not in desc:
             desc += f" {m}"
+    from .captions import censor
+
+    titles = [censor(t, bool(camp.get("censor_profanity"))) for t in titles]
+    desc = censor(desc, bool(camp.get("censor_profanity")))
     return {"titles": [t[:80] for t in titles[:3]], "description": desc, "hashtags": all_tags[:10],
             "caption_preview": tr_upper(titles[0])[:40] if titles else ""}

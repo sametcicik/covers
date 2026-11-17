@@ -12,6 +12,7 @@ fallback order: yt-dlp --download-sections -> streamlink -> TwitchDownloaderCLI.
 from __future__ import annotations
 
 import math
+import os
 import re
 import shutil
 import threading
@@ -303,15 +304,18 @@ def ytdlp_section(url: str, fmt_id: str, start: float, end: float, out: Path) ->
         cmd += ["--limit-rate", settings.rate_limit]
     if settings.cookies_file:
         cmd += ["--cookies", settings.cookies_file]
+    proxy = os.environ.get("HTTPS_PROXY") or os.environ.get("https_proxy")
+    if proxy:  # yt-dlp hands HLS sections to ffmpeg, which ignores *_PROXY env vars
+        cmd += ["--downloader-args", f"ffmpeg_i:-http_proxy {proxy}"]
     cmd[0] = tool("yt-dlp") or "yt-dlp"
     run(cmd + [url], timeout=7200)
     return start
 
 
-def streamlink_section(url: str, start: float, end: float, out: Path) -> float:
+def streamlink_section(url: str, start: float, end: float, out: Path, quality: str = "best") -> float:
     exe = tool("streamlink") or "streamlink"
     raw = out.with_suffix(".ts")
-    run([exe, "--hls-start-offset", _hms(start), "--hls-duration", _hms(end - start), "-f", "-o", raw, url, "best"],
+    run([exe, "--hls-start-offset", _hms(start), "--hls-duration", _hms(end - start), "-f", "-o", raw, url, quality],
         timeout=7200)
     run(["ffmpeg", "-y", "-v", "error", "-i", raw, "-c", "copy", out])
     raw.unlink(missing_ok=True)
@@ -340,7 +344,9 @@ def download_section(meta: dict, purpose: str, start: float, end: float, out: Pa
             log.warning("HLS fetch failed, falling back to yt-dlp: %s", e)
     for name, fn in (
         ("yt-dlp", lambda: ytdlp_section(meta["url"], fmt["format_id"], start, end, out)),
-        ("streamlink", lambda: streamlink_section(meta["url"], start, end, out)),
+        ("streamlink", lambda: streamlink_section(
+            meta["url"], start, end, out,
+            "1080p60,1080p,best" if purpose == "hq" else ("360p,360p30,worst" if purpose == "preview" else "audio_only,worst"))),
         ("twitchdownloader", lambda: twitchdownloader_section(meta, start, end, out)),
     ):
         try:

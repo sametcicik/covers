@@ -403,7 +403,7 @@ const Detail: React.FC<{job: Job; clip: Clip; onRerender: () => void}> = ({job, 
 						fps={props.fps}
 						compositionWidth={1080}
 						compositionHeight={1920}
-						style={{width: '100%', aspectRatio: '9 / 16'}}
+						style={{height: 'min(58vh, 680px)', aspectRatio: '9 / 16', maxWidth: '100%'}}
 						controls
 						loop
 						acknowledgeRemotionLicense

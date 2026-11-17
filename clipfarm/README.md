@@ -68,6 +68,18 @@ One screen, in this order:
 
 The UI takes the streamer's accent colour.
 
+![gallery and live preview](docs/screens/ui_detail.png)
+
+![per-clip settings](docs/screens/ui_settings.png)
+
+## Example output
+
+`docs/samples/` holds light 720p previews, covers, frame sheets and the QA numbers of the end-to-end test clips:
+- 3 clips from a Kick VOD (wtcN, Turkish);
+- 3 clips from a Twitch VOD (KaiCenat, English).
+
+See `docs/samples/README.md`.
+
 ## Streamer profiles
 
 `streamers/<slug>/profile.json` is created on first sight. Edit it by hand or via `PUT /api/profiles/<slug>`.

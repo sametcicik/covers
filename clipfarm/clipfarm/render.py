@@ -107,7 +107,16 @@ def render_clip(clip_dir: Path, hq_path: Path, progress=None, denoise: bool = Tr
     rp = with_urls(props, hq_path)
     write_json(clip_dir / "props.render.json", rp)
     video = clip_dir / "video.mp4"
-    remotion(clip_dir / "props.render.json", video, (lambda f: progress(f * 0.9)) if progress else None)
+    import hashlib
+    import json as _json
+
+    digest = hashlib.sha1(_json.dumps(props, sort_keys=True).encode()).hexdigest()
+    stamp = clip_dir / "video.sha1"
+    if video.exists() and stamp.exists() and stamp.read_text() == digest:
+        log.info("video unchanged, skipping Remotion pass")
+    else:
+        remotion(clip_dir / "props.render.json", video, (lambda f: progress(f * 0.9)) if progress else None)
+        stamp.write_text(digest)
     mix = audio.build_mix(hq_path, plan["segments"], int(plan["fps"]), plan["sfx"], clip_dir / "audio", denoise)
     final = clip_dir / "final.mp4"
     run(["ffmpeg", "-y", "-v", "error", "-i", video, "-i", mix["path"], "-map", "0:v:0", "-map", "1:a:0",

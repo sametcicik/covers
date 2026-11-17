@@ -122,12 +122,18 @@ def emphasis_scores(words: list[dict], llm_words: list[str], dictionary: list[st
     return out
 
 
-def censor(word: str) -> str:
-    def rep(m):
-        t = m.group(0)
-        return t[0] + "*" * max(1, len(t) - 2) + t[-1] if len(t) > 2 else t[0] + "*"
+# slurs are always masked (platform policy), regardless of campaign.censor_profanity
+SLURS = re.compile(r"\b(nigg(a|er|az|as|ers)?s?|f[a@]gg?ots?|retards?)\b", re.I)
 
-    return PROFANITY.sub(rep, word)
+
+def _mask(m) -> str:
+    t = m.group(0)
+    return t[0] + "*" * max(1, len(t) - 2) + t[-1] if len(t) > 2 else t[0] + "*"
+
+
+def censor(word: str, profanity: bool = True) -> str:
+    word = SLURS.sub(_mask, word)
+    return PROFANITY.sub(_mask, word) if profanity else word
 
 
 # ------------------------------------------------------------------ paging
@@ -192,7 +198,7 @@ def build_pages(out_words: list[dict], style: str, palette: dict, seed: int, upp
         last_combo = combo
         items = []
         for k, w in enumerate(pw):
-            txt = censor(w["w"]) if censor_profanity else w["w"]
+            txt = censor(w["w"], censor_profanity)
             is_e = has_emph and k == best
             fid = efont if is_e else neutral
             f_up = fonts()[fid].get("uppercase", False) or (up and not is_e)
@@ -252,5 +258,5 @@ def _layout_lines(items: list[dict]) -> list[dict]:
 
 def caption_tokens(out_words: list[dict]) -> list[dict]:
     """@remotion/captions `Caption` objects (whitespace-sensitive text)."""
-    return [{"text": (" " if i else "") + w["w"], "startMs": w["startMs"], "endMs": w["endMs"],
+    return [{"text": (" " if i else "") + censor(w["w"], False), "startMs": w["startMs"], "endMs": w["endMs"],
              "timestampMs": (w["startMs"] + w["endMs"]) // 2, "confidence": w.get("p")} for i, w in enumerate(out_words)]

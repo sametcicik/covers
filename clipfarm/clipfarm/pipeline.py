@@ -210,6 +210,7 @@ def run_job(url: str, n_clips: int = 10, start: float | None = None, end: float 
                 accepted.append(entry)
         job["status"] = "done"
         job["elapsed"] = round(time.time() - t_start, 1)
+        export_outputs(job)
         save_job(job)
         prog("done", 1.0, f"{len(accepted)} klip hazır")
         return job
@@ -296,18 +297,29 @@ def build_render_qa(job, prof, mo, cd: Path, hq: dict, words, sig, lay, prev, la
             **md, "qa": out["qa"], "settings": st, "text": mo.get("text", "")}
     write_json(cd / "info.json", info)
     out.update(titles=md["titles"], meta=md)
-    if passed:
-        dest = settings.output_dir / job["channel"] / job["id"]
-        dest.mkdir(parents=True, exist_ok=True)
-        rank = len(list(dest.glob("*.mp4"))) + 1
-        base = f"{rank:02d}_{slugify(md['titles'][0], 40)}"
-        for old in dest.glob(f"*_{cd.name}.*"):
-            old.unlink()
-        shutil.copy(cd / "final.mp4", dest / f"{base}_{cd.name}.mp4")
-        shutil.copy(cd / "cover.jpg", dest / f"{base}_{cd.name}.jpg")
-        write_json(dest / f"{base}_{cd.name}.json", info)
-        out["output"] = str(dest / f"{base}_{cd.name}.mp4")
     prog("qa", 1.0, f"{label}: {'geçti' if passed else 'reddedildi'}")
+    return out
+
+
+def export_outputs(job: dict) -> list[str]:
+    """Rebuild output/<channel>/<job>/ from all ready clips, ranked by score: NN_<title>.mp4/.jpg/.json."""
+    dest = settings.output_dir / job["channel"] / job["id"]
+    if dest.exists():
+        shutil.rmtree(dest)
+    dest.mkdir(parents=True, exist_ok=True)
+    jd = job_dir(job["id"])
+    ready = sorted([c for c in job.get("clips", []) if c.get("status") == "ready"], key=lambda c: -c.get("score", 0))
+    out = []
+    for i, c in enumerate(ready, 1):
+        cd = jd / "clips" / c["id"]
+        info = read_json(cd / "info.json") or {}
+        base = f"{i:02d}_{slugify((info.get('titles') or [c['id']])[0], 40)}"
+        shutil.copy(cd / "final.mp4", dest / f"{base}.mp4")
+        if (cd / "cover.jpg").exists():
+            shutil.copy(cd / "cover.jpg", dest / f"{base}.jpg")
+        write_json(dest / f"{base}.json", {**info, "rank": i})
+        c["output"] = str(dest / f"{base}.mp4")
+        out.append(c["output"])
     return out
 
 
@@ -332,5 +344,6 @@ def rerender(job_id: str, clip_id: str, new_settings: dict, progress_cb=None) ->
     for c in job.get("clips", []):
         if c["id"] == clip_id:
             c.update(res)
+    export_outputs(job)
     save_job(job)
     return res

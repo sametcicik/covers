@@ -59,6 +59,8 @@ def sfx_bed(events: list[dict], duration: float, speech_lufs: float, out: Path) 
         if x.ndim == 1:
             x = np.stack([x, x], 1)
         below = float(np.clip(10 + (-(e.get("gain", -8) + 2)) * 0.4, 10, 14))
+        stacked = sum(1 for o in events if abs(o["at"] - e["at"]) < 0.2)  # layered hits (whoosh+impact)
+        below += 10 * np.log10(max(1, stacked))
         src_l = e.get("lufs") if e.get("lufs") is not None else _lufs(x)
         g = 10 ** ((speech_lufs - below - src_l) / 20)
         i0 = int(e["start"] * SR)

@@ -108,6 +108,20 @@ One line per decision made without asking (newest at the bottom of each section)
   - optional LLM vision review of 9 frames.
 - Fixes before up to 2 re-renders: shorten, move captions, offset captions by the measured sync error, fall back to a single font, remix without denoise. If it still fails, the clip is rejected and the next candidate is used, so only passing clips reach the gallery.
 
+## Fixes made during end-to-end testing
+- **Fonts did not load in the render.** Remotion's headless Chrome loads the bundle from its own origin, so the media server now sends CORS headers. The first frame sheet had shown a fallback serif.
+- **Facecam box.** Picking the strongest persistent edge chose a game HUD line on Kick. Now several sharp line candidates are collected per side, plus the frame border, and the best combination is scored on edge strength, a common camera aspect and face placement. The crop is also inset by 3 %.
+- **Transcript merge.** Re-transcribed ranges replace the old words; previously both were kept and words doubled. Whisper script hallucinations (kana inside Turkish) are dropped, and split suffixes ("%50" + "'ye") are merged.
+- **Kick chat.** Chat counts as a signal only at ≥10 msgs/min; Kick's history (≈4/min) is ignored. Robust z-scores have a floor.
+- **Emphasis.** Turkish fillers ("abi", "aga", "lan", "ya") are never emphasized. Scoring is relative per page, at most one emphasis every other page.
+- **Caption sync QA** aligns re-transcribed words with `difflib` instead of greedy matching. An unmeasurable sync counts as an issue.
+- **Slurs** are always masked in captions and titles (platform policy). Other profanity follows `campaign.censor_profanity`.
+- **Stacked SFX** at the same instant (whoosh+impact) are attenuated by 10·log10(n) dB, so the combined hit still sits 10–14 dB under speech.
+- **Re-renders** skip the Remotion pass when the props hash is unchanged (audio-only fixes are fast).
+- **Outputs** are rebuilt from all ready clips, ranked by score, after every run or re-render.
+- **Proxied networks.** yt-dlp's ffmpeg section download gets `-http_proxy`. Node gets `NODE_USE_ENV_PROXY=1` for Remotion's browser download.
+- **Platform clips** (or inputs under 70 s) are kept whole as a single, sentence-snapped moment.
+
 ## UI
 - FastAPI + SSE serves a single-screen React (Vite) app. The Player renders the same `ClipComposition` with live props, so a setting change previews instantly and "Yeniden render et" exports exactly that.
 - The streamer's palette primary/accent are injected as CSS variables, so the console re-skins per streamer. Type is Bricolage Grotesque (OFL, npm `@fontsource-variable`).

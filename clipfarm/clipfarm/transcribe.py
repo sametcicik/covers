@@ -44,7 +44,14 @@ FOREIGN_SCRIPT = re.compile(r"[\u0370-\u03ff\u0400-\u04ff\u0590-\u06ff\u0e00-\u0
 
 
 def clean_words(words: list[dict], lang: str | None) -> list[dict]:
-    """Drop Whisper script hallucinations (e.g. kana inside Turkish) for Latin-script languages."""
+    """Merge split suffixes ("%50" + "'ye" -> "%50'ye") and drop script hallucinations (kana inside Turkish)."""
+    merged: list[dict] = []
+    for w in words:
+        if merged and re.match(r"^['’]\w", w["w"]) and w["s"] - merged[-1]["e"] < 0.3:
+            merged[-1] = {**merged[-1], "w": merged[-1]["w"] + w["w"], "e": w["e"]}
+        else:
+            merged.append(w)
+    words = merged
     if (lang or "") not in LATIN_LANGS:
         return words
     out = []
