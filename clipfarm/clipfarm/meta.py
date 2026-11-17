@@ -21,7 +21,13 @@ def _quote(text: str, n: int = 52) -> str:
     from .captions import SLURS
     from .moments import PROFANITY
 
-    sents = [x.strip() for x in re.split(r"(?<=[.!?])\s+", text.strip()) if x.strip()]
+    sents = []
+    for x in re.split(r"(?<=[.!?,])\s+", text.strip()):
+        ws = x.split()
+        if len(ws) > 12:  # unpunctuated speech: cut into phrases
+            sents += [" ".join(ws[k:k + 8]) for k in range(0, len(ws), 8)]
+        elif ws:
+            sents.append(x.strip().rstrip(","))
 
     def rank(s: str):
         nw = len(s.split())

@@ -323,6 +323,27 @@ def export_outputs(job: dict) -> list[str]:
     return out
 
 
+def refresh_meta(job_id: str) -> None:
+    """Recompute titles/description/hashtags for every clip (no re-render) and re-export."""
+    job = load_job(job_id)
+    jd = job_dir(job_id)
+    m = read_json(jd / "meta.json")
+    prof = profile.ensure(m["platform"], m["channel"])
+    lang = (read_json(jd / "analysis" / "transcript.json") or {}).get("language", "tr")
+    for c in job.get("clips", []):
+        cd = jd / "clips" / c["id"]
+        info = read_json(cd / "info.json")
+        mo = read_json(cd / "moment.json")
+        if not info or not mo:
+            continue
+        md = meta.build(mo, job, prof, lang)
+        info.update(md)
+        write_json(cd / "info.json", info)
+        c.update(titles=md["titles"], meta=md)
+    export_outputs(job)
+    save_job(job)
+
+
 def rerender(job_id: str, clip_id: str, new_settings: dict, progress_cb=None) -> dict:
     """Re-render a clip with changed settings (no re-download, no re-analysis)."""
     job = load_job(job_id)

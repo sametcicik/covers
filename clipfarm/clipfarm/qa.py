@@ -145,6 +145,18 @@ def run_qa(clip_dir: Path, props: dict, plan: dict, max_dur: float = 59.5) -> di
     res["checks"]["black"] = bl
     if bl:
         res["issues"].append(f"black frames at {bl[:3]}")
+    # speech-free stretches (captions disappear, retention drops)
+    toks = props["captions"]["tokens"]
+    if len(toks) >= 4:
+        starts = [0] + [t["startMs"] for t in toks] + [int(dur * 1000)]
+        ends = [0] + [t["endMs"] for t in toks] + [int(dur * 1000)]
+        longest = max((starts[k + 1] - ends[k]) for k in range(len(starts) - 1)) / 1000
+        res["checks"]["longest_silence"] = round(longest, 2)
+        if longest > 7.0:
+            res["issues"].append(f"{longest:.1f}s without speech/captions")
+            res["fixes"].append("shorten")
+    if dur < 12:
+        res["issues"].append(f"too short ({dur:.1f}s)")
     # glyphs
     g = check_turkish_glyphs(props)
     res["checks"]["glyphs"] = g

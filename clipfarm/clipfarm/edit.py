@@ -44,7 +44,7 @@ def _plan_segments(m: dict, words: list[dict], sig: Signals, hook: bool, max_tot
         gdb = sig.db(a["e"] + 0.05, b["s"] - 0.05)
         if len(gdb) and np.percentile(gdb, 80) > lvl - 7:
             # laughter / reaction / game event in the gap: keep it, but cap long stretches without speech
-            if relax == 0 and g > 4.5 and not (a["e"] <= ps <= b["s"]):
+            if g > 4.5 and not (a["e"] <= ps <= b["s"]):  # always: no long speech-free stretches
                 cuts.append((a["e"] + 2.5, b["s"] - 1.0))
             continue
         if relax >= 2 and g < 1.2:

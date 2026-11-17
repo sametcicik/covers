@@ -117,6 +117,9 @@ def _span_score(sents, i, j, sig: Signals, lang: str) -> tuple[float, dict]:
         score -= 6
     if nwords < 12:
         score -= 10
+    gaps = [sents[k + 1]["s"] - sents[k]["e"] for k in range(i, j)]
+    if gaps and max(gaps) > 6:
+        score -= 4 * (max(gaps) - 6)  # long silent stretches kill retention
     return score, {"lex": lex, "pos": pos, **st}
 
 
