@@ -1,0 +1,13 @@
+.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.env
+work/
+output/
+bin/
+studio/node_modules/
+studio/.bundle/
+studio/dist/
+assets/models/whisper/
+streamers/*/art/

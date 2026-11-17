@@ -1,0 +1,84 @@
+{
+  "language": "auto",
+  "facecam": null,
+  "palette": {
+    "primary": "#FA2929",
+    "accent": "#AF79EC",
+    "accent2": "#F65ACB",
+    "text": "#FBF6F6",
+    "stroke": "#150A0A",
+    "source": "brand+art",
+    "locked": false,
+    "contrast": {
+      "primary": 5.01,
+      "accent": 6.27,
+      "accent2": 6.71,
+      "text": 18.17
+    },
+    "extracted": [
+      "#FEFEFE",
+      "#050406",
+      "#292A27",
+      "#7C50AE",
+      "#5F4E57",
+      "#D3D0CF",
+      "#A19691",
+      "#EA2635"
+    ]
+  },
+  "dictionary": {
+    "terms": [
+      "kaicenat",
+      "KaiCenat",
+      "wtcn",
+      "wtcN"
+    ],
+    "replace": {}
+  },
+  "fonts": {
+    "set": "default",
+    "exclude": []
+  },
+  "captions": {
+    "style": "dynamic",
+    "position": "auto"
+  },
+  "label": {
+    "enabled": true
+  },
+  "hook": {
+    "enabled": true
+  },
+  "sfx": {
+    "density": 2
+  },
+  "music": {
+    "enabled": false
+  },
+  "campaign": {
+    "max_duration": 59,
+    "target_duration": [
+      20,
+      45
+    ],
+    "required_hashtags": [],
+    "required_mentions": [],
+    "censor_profanity": false,
+    "cta": ""
+  },
+  "platform": "twitch",
+  "slug": "kaicenat",
+  "display_name": "KaiCenat",
+  "created": "2026-11-17T01:15:55+00:00",
+  "art": {
+    "avatar": "art/avatar.img",
+    "banner": "art/banner.img",
+    "offline": "art/offline.img",
+    "panel_0": "art/panel_0.img",
+    "panel_1": "art/panel_1.img",
+    "panel_2": "art/panel_2.img",
+    "panel_3": "art/panel_3.img",
+    "panel_4": "art/panel_4.img"
+  },
+  "updated": "2026-11-17T01:15:59+00:00"
+}

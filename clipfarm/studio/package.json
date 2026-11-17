@@ -1,0 +1,29 @@
+{
+  "name": "clipfarm-studio",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build:ui": "vite build",
+    "dev:ui": "vite",
+    "studio": "remotion studio src/remotion/index.ts",
+    "typecheck": "tsc --noEmit"
+  },
+  "dependencies": {
+    "@fontsource-variable/bricolage-grotesque": "^5.3.0",
+    "@remotion/bundler": "^4.0.544",
+    "@remotion/captions": "^4.0.544",
+    "@remotion/cli": "^4.0.544",
+    "@remotion/player": "^4.0.544",
+    "@remotion/renderer": "^4.0.544",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "remotion": "^4.0.544"
+  },
+  "devDependencies": {
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^5.2.0",
+    "typescript": "^7.0.2",
+    "vite": "^7.3.8"
+  }
+}

@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "clipfarm"
+version = "0.1.0"
+description = "Stream link in, publish-ready vertical clips out (Kick/Twitch)."
+requires-python = ">=3.10"
+dependencies = [
+  "yt-dlp[default,curl-cffi]",
+  "streamlink",
+  "faster-whisper>=1.1",
+  "opencv-python-headless",
+  "numpy",
+  "scipy",
+  "soundfile",
+  "pyloudnorm",
+  "fastapi",
+  "uvicorn[standard]",
+  "python-dotenv",
+  "httpx",
+  "pillow",
+  "fonttools",
+]
+
+[project.scripts]
+clipfarm = "clipfarm.cli:main"
+
+[tool.setuptools]
+packages = ["clipfarm"]

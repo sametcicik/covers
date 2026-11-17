@@ -1,0 +1,353 @@
+{
+  "version": 1,
+  "size_scale_reference": "main_archivo_black",
+  "size_scale_method": "OS/2 sCapHeight / unitsPerEm, cross-checked against the 'H' outline; size_scale = ref_cap_em / font_cap_em so all fonts share the reference cap height at the same CSS px.",
+  "turkish_notes": [
+    "Always set lang=\"tr\" on caption elements (or pass language='tr' to the shaper) so fonts with a TRK locl feature use Turkish forms.",
+    "Do NOT use Python str.upper()/lower() for Turkish: 'i'.upper() -> 'I' (should be 'İ'), 'I'.lower() -> 'i' (should be 'ı'), 'İ'.lower() -> 'i' + U+0307 (combining dot, renders as a double dot in some fonts). Use locale-aware casing: i->İ, ı->I before upper(); İ->i, I->ı before lower(). CSS text-transform: uppercase is locale-aware only when lang=\"tr\" is set.",
+    "fi ligatures: checked every font; the i-dot stays visible in all of them (separate contour or joined to the f terminal), so 'fiyat' vs 'fıstık' stays distinct. JetBrains Mono has no fi ligature.",
+    "Each face is registered as its own family: declare @font-face with exactly the weight/style given here and set font-synthesis: none to avoid faux bold/italic (Archivo Black and Anton are 400 by metadata although visually heavy).",
+    "Turkish lira sign ₺ (U+20BA) is missing in main_archivo_black, serif_instrument_italic and mono_jetbrains_xbold (see has_lira_sign); write 'TL' or fall back to another font for ₺."
+  ],
+  "fonts": [
+    {
+      "id": "main_archivo_black",
+      "role": "main",
+      "family": "CF Archivo Black",
+      "file": "main_archivo_black.ttf",
+      "weight": 400,
+      "style": "normal",
+      "uppercase": false,
+      "size_scale": 1.0,
+      "letter_spacing_em": -0.01,
+      "license": "OFL-1.1",
+      "license_file": "licenses/ArchivoBlack-OFL.txt",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/archivoblack/ArchivoBlack-Regular.ttf",
+      "instance": null,
+      "internal_family": "Archivo Black",
+      "internal_full_name": "Archivo Black Regular",
+      "version": "Version 1.006",
+      "turkish_ok": true,
+      "has_lira_sign": false,
+      "metrics": {
+        "upm": 1000,
+        "cap_height_em": 0.688,
+        "x_height_em": 0.528,
+        "ascent_em": 0.878,
+        "descent_em": 0.21,
+        "line_gap_em": 0.0,
+        "vertical_metrics_source": "hhea"
+      },
+      "sha256": "dd9a89a019b4849f66ab75455fe7bdf931311042cbb0f0f97acc061539703180",
+      "notes": "Heavy grotesk; neutral words. Reference for size_scale. Works in mixed case and caps."
+    },
+    {
+      "id": "main_montserrat_black",
+      "role": "main",
+      "family": "CF Montserrat Black",
+      "file": "main_montserrat_black.ttf",
+      "weight": 900,
+      "style": "normal",
+      "uppercase": true,
+      "size_scale": 0.983,
+      "letter_spacing_em": 0.0,
+      "license": "OFL-1.1",
+      "license_file": "licenses/Montserrat-OFL.txt",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/montserrat/Montserrat%5Bwght%5D.ttf",
+      "instance": {
+        "wght": 900
+      },
+      "internal_family": "Montserrat",
+      "internal_full_name": "Montserrat Black",
+      "version": "Version 9.000",
+      "turkish_ok": true,
+      "has_lira_sign": true,
+      "metrics": {
+        "upm": 1000,
+        "cap_height_em": 0.7,
+        "x_height_em": 0.547,
+        "ascent_em": 0.968,
+        "descent_em": 0.251,
+        "line_gap_em": 0.0,
+        "vertical_metrics_source": "OS/2 typo (USE_TYPO_METRICS)"
+      },
+      "sha256": "acc64ff94062140cd8a90abab7b14755335cd1586f728e035839fa2663b383d4",
+      "notes": "Wide geometric Black; the classic short-form caption look in caps. Instanced from VF, overlaps removed."
+    },
+    {
+      "id": "condensed_anton",
+      "role": "condensed",
+      "family": "CF Anton",
+      "file": "condensed_anton.ttf",
+      "weight": 400,
+      "style": "normal",
+      "uppercase": true,
+      "size_scale": 0.801,
+      "letter_spacing_em": 0.01,
+      "license": "OFL-1.1",
+      "license_file": "licenses/Anton-OFL.txt",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/anton/Anton-Regular.ttf",
+      "instance": null,
+      "internal_family": "Anton",
+      "internal_full_name": "Anton Regular",
+      "version": "Version 2.116; ttfautohint (v1.8.3)",
+      "turkish_ok": true,
+      "has_lira_sign": true,
+      "metrics": {
+        "upm": 2048,
+        "cap_height_em": 0.8594,
+        "x_height_em": 0.7324,
+        "ascent_em": 1.1763,
+        "descent_em": 0.3291,
+        "line_gap_em": 0.0,
+        "vertical_metrics_source": "OS/2 typo (USE_TYPO_METRICS)"
+      },
+      "sha256": "a4ba3a92350ebb031da0cb47630ac49eb265082ca1bc0450442f4a83ab947cab",
+      "notes": "Tall heavy condensed; very large cap height (0.86 em), hence size_scale ~0.8."
+    },
+    {
+      "id": "serif_instrument_italic",
+      "role": "serif_italic",
+      "family": "CF Instrument Serif Italic",
+      "file": "serif_instrument_italic.ttf",
+      "weight": 400,
+      "style": "italic",
+      "uppercase": false,
+      "size_scale": 0.956,
+      "letter_spacing_em": 0.0,
+      "license": "OFL-1.1",
+      "license_file": "licenses/InstrumentSerif-OFL.txt",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/instrumentserif/InstrumentSerif-Italic.ttf",
+      "instance": null,
+      "internal_family": "Instrument Serif",
+      "internal_full_name": "Instrument Serif Italic",
+      "version": "Version 1.000; ttfautohint (v1.8.4.7-5d5b);gftools[0.9.27]",
+      "turkish_ok": true,
+      "has_lira_sign": false,
+      "metrics": {
+        "upm": 1000,
+        "cap_height_em": 0.72,
+        "x_height_em": 0.51,
+        "ascent_em": 0.99,
+        "descent_em": 0.31,
+        "line_gap_em": 0.0,
+        "vertical_metrics_source": "OS/2 typo (USE_TYPO_METRICS)"
+      },
+      "sha256": "08939b8bdf534afec24ae0ef5e03f948940cd9a8fe08e7fecbad040e62327385",
+      "notes": "Elegant condensed editorial italic; light (400) by design, contrast against the heavy sans. Use in lowercase/mixed case."
+    },
+    {
+      "id": "marker_caveat_brush",
+      "role": "marker",
+      "family": "CF Caveat Brush",
+      "file": "marker_caveat_brush.ttf",
+      "weight": 400,
+      "style": "normal",
+      "uppercase": true,
+      "size_scale": 1.042,
+      "letter_spacing_em": 0.01,
+      "license": "OFL-1.1",
+      "license_file": "licenses/CaveatBrush-OFL.txt",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/caveatbrush/CaveatBrush-Regular.ttf",
+      "instance": null,
+      "internal_family": "Caveat Brush",
+      "internal_full_name": "Caveat Brush",
+      "version": "Version 1.096; ttfautohint (v1.3)",
+      "turkish_ok": true,
+      "has_lira_sign": true,
+      "metrics": {
+        "upm": 1000,
+        "cap_height_em": 0.66,
+        "x_height_em": 0.42,
+        "ascent_em": 0.96,
+        "descent_em": 0.3,
+        "line_gap_em": 0.0,
+        "vertical_metrics_source": "OS/2 typo (USE_TYPO_METRICS)"
+      },
+      "sha256": "e565bd7bffd895ca64f8d1cb77c816b9b38d9c010246386a07c9648592f6f282",
+      "notes": "Dry-brush marker hand. Small x-height (0.41 em) so it reads best in caps; full Turkish incl. ₺."
+    },
+    {
+      "id": "mono_jetbrains_xbold",
+      "role": "mono",
+      "family": "CF JetBrains Mono XBold",
+      "file": "mono_jetbrains_xbold.ttf",
+      "weight": 800,
+      "style": "normal",
+      "uppercase": false,
+      "size_scale": 0.942,
+      "letter_spacing_em": -0.02,
+      "license": "OFL-1.1",
+      "license_file": "licenses/JetBrainsMono-OFL.txt",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/jetbrainsmono/JetBrainsMono%5Bwght%5D.ttf",
+      "instance": {
+        "wght": 800
+      },
+      "internal_family": "JetBrains Mono",
+      "internal_full_name": "JetBrains Mono ExtraBold",
+      "version": "Version 2.211",
+      "turkish_ok": true,
+      "has_lira_sign": false,
+      "metrics": {
+        "upm": 1000,
+        "cap_height_em": 0.73,
+        "x_height_em": 0.55,
+        "ascent_em": 1.02,
+        "descent_em": 0.3,
+        "line_gap_em": 0.0,
+        "vertical_metrics_source": "OS/2 typo (USE_TYPO_METRICS)"
+      },
+      "sha256": "fe59b28458349dfbc6ca640f0f0bb1cf0f75491140cf7133d2156337f0a9d9f4",
+      "notes": "Bold mono for numbers/stats/'terminal' words. No fi ligature. Instanced from VF, overlaps removed."
+    },
+    {
+      "id": "display_unbounded_black",
+      "role": "display",
+      "family": "CF Unbounded Black",
+      "file": "display_unbounded_black.ttf",
+      "weight": 900,
+      "style": "normal",
+      "uppercase": true,
+      "size_scale": 0.917,
+      "letter_spacing_em": -0.02,
+      "license": "OFL-1.1",
+      "license_file": "licenses/Unbounded-OFL.txt",
+      "source_url": "https://raw.githubusercontent.com/google/fonts/main/ofl/unbounded/Unbounded%5Bwght%5D.ttf",
+      "instance": {
+        "wght": 900
+      },
+      "internal_family": "Unbounded",
+      "internal_full_name": "Unbounded Black",
+      "version": "Version 1.701;gftools[0.9.28.dev5+ged2979d]",
+      "turkish_ok": true,
+      "has_lira_sign": true,
+      "metrics": {
+        "upm": 1000,
+        "cap_height_em": 0.75,
+        "x_height_em": 0.575,
+        "ascent_em": 0.995,
+        "descent_em": 0.245,
+        "line_gap_em": 0.0,
+        "vertical_metrics_source": "OS/2 typo (USE_TYPO_METRICS)"
+      },
+      "sha256": "bbd05fe4c7419a97d5684823de3c0bdee981fdde61c62960703df35b45b70211",
+      "notes": "Extra-wide rounded Black; maximal contrast with Anton. Wide: budget line width. Instanced from VF, overlaps removed."
+    }
+  ],
+  "rejected": [
+    {
+      "family": "Permanent Marker",
+      "reason": "Missing ğ Ğ ş Ş İ (U+011F/011E/015F/015E/0130) in cmap; render shows blank/tofu gaps. Latin-basic only.",
+      "kind": "turkish_fail",
+      "license": "Apache-2.0"
+    },
+    {
+      "family": "Rock Salt",
+      "reason": "Missing ğ Ğ ş Ş İ (U+011F/011E/015F/015E/0130) in cmap.",
+      "kind": "turkish_fail",
+      "license": "Apache-2.0"
+    },
+    {
+      "family": "Gochi Hand",
+      "reason": "Missing ğ Ğ ş Ş İ (U+011F/011E/015F/015E/0130) in cmap.",
+      "kind": "turkish_fail",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Sedgwick Ave Display",
+      "reason": "Plain capital I (U+0049) is drawn with a dot (2 contours), visually identical to İ (U+0130): 'IŞIK' renders as 'İŞİK'. Glyphs exist but the I/İ distinction is lost. Lowercase is also unicase.",
+      "kind": "turkish_fail",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Syne ExtraBold",
+      "reason": "Ü/ü dieresis is placed inside the U counter (Ü top == U top); fills in under caption stroke/outline. Also extremely wide (test line 3600px at 120px). Missing ₺.",
+      "kind": "turkish_risk",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Bebas Neue",
+      "reason": "Unicase: lowercase i and ı both render as a dotless capital I, so lowercase Turkish input loses the i/ı distinction unless pre-uppercased with Turkish rules. Coverage otherwise OK; Anton chosen instead (heavier, real lowercase).",
+      "kind": "turkish_risk",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Inter Tight 900",
+      "reason": "Turkish OK. Too close to Archivo Black/Montserrat; least character of the main candidates.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Poppins 900",
+      "reason": "Turkish OK. Geometric near-duplicate of Montserrat Black.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Figtree 900",
+      "reason": "Turkish OK (no ₺). Similar role to the chosen mains, less weight contrast.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Oswald 700",
+      "reason": "Turkish OK. Lighter and less impactful than Anton at caption sizes.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "League Gothic",
+      "reason": "Turkish OK (no ₺). Thinner strokes than Anton; weaker over busy video.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Playfair Display Italic 800/900",
+      "reason": "Turkish OK. Oldstyle figures (1.250.000 drops below baseline) and swash caps in all-caps; Reserved Font Name 'Playfair Display' complicates shipping an instanced derivative.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "DM Serif Display Italic",
+      "reason": "Turkish OK. Strong runner-up (heavier, sturdier than Instrument Serif); swap in if Instrument's hairlines prove too thin on video.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Fraunces Italic (opsz144, wght800)",
+      "reason": "Turkish OK. WONK forms lean b/d/l oddly ('İstanbul'da' looks broken); 4-axis VF needs careful instancing.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Kalam Bold",
+      "reason": "Turkish OK. Runner-up marker; smooth felt-pen with less brush texture than Caveat Brush; very deep descent metric (0.53 em).",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Marck Script",
+      "reason": "Turkish glyphs present, but it is a connecting script, not a marker: all-caps is illegible and capital I is a looped J-like form. Reserved Font Name 'Marck Script'.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Space Mono Bold",
+      "reason": "Turkish OK (no ₺). Runner-up mono with more quirk; lighter (700) than JetBrains Mono 800.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "IBM Plex Mono Bold",
+      "reason": "Turkish OK. Less distinctive; Reserved Font Name 'Plex'.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    },
+    {
+      "family": "Bricolage Grotesque ExtraBold",
+      "reason": "Turkish OK. Too close to the main grotesks; Unbounded gives more contrast.",
+      "kind": "not_selected",
+      "license": "OFL-1.1"
+    }
+  ]
+}
