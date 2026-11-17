@@ -135,6 +135,10 @@ docs/                font tests, caption references, example frames
 - **@nocodealex research:** Instagram requires a login and ClipFarm does not get around it. The analysis used his public TikTok cross-posts (January 2023); `scripts/caption_research.py` re-runs it on the latest Reels with your own cookies.
 - **Facecam detection** assumes a rectangular overlay. Rounded or masked cams fall back to an expanded face box; fix it once in `profile.json` with `locked: true`.
 - **Sub-only VODs** need `COOKIES_FILE`.
+- **Face protection** only covers the streamer. In split layouts only the facecam panel is checked, so captions may cross game characters' faces in cutscenes.
+- **Untested here:**
+  - camera-only (IRL) footage and the multi-person active-speaker crop: both test VODs were game + facecam;
+  - the LLM gateway path against a real gateway: it was tested against a mock OpenAI-compatible server.
 - **Live-in-progress Kick streams** only work once Kick has created the VOD entry, which normally happens shortly after going live.
 - **Remotion** is free for individuals and companies of up to 3 people. Larger companies need a licence (`REMOTION_LICENSE_KEY`).
 - **TwitchDownloaderCLI** is fetched from GitHub Releases by `install.sh`. It is only a last-resort fallback and could not be tested in the build environment.
