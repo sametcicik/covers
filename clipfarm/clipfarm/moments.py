@@ -11,9 +11,9 @@ from .util import log
 END_PUNCT = re.compile(r"[.!?…]+[\"')\]]*$")
 CONJ_START = {"ve", "ama", "çünkü", "fakat", "yani", "da", "de", "ki", "and", "but", "so", "because", "or", "then"}
 SHOCK = re.compile(
-    r"\b(yok art[ıi]k|inan(a|ı)m(ı|i)yorum|inan[ıi]lmaz|nas[ıi]l ya|ne(?:yse)?\?|ciddi misin|aman|oha|vay|lan|abi|aga|"
+    r"\b(yok art[ıi]k|inan(a|ı)m(ı|i)yorum|inan[ıi]lmaz|nas[ıi]l ya|ciddi misin|aman|oha|vay|"
     r"efsane|rezalet|bitti|kaybett|kazand|milyon|bin lira|tl|dolar|"
-    r"no way|what the|oh my god|omg|holy|bro|insane|crazy|dude|let'?s go|i can'?t|wtf|are you serious)\b", re.I)
+    r"no way|what the|oh my god|omg|holy|insane|crazy|let'?s go|i can'?t|wtf|are you serious)\b", re.I)
 LAUGH_TXT = re.compile(r"\b(ha(ha)+|ah(ah)+|hehe+|lol|lmao|\[?(laughter|kahkaha)\]?)\b", re.I)
 PROFANITY = re.compile(r"\b(amk|aq|siktir|lan|orospu|piç|fuck|shit|damn|bitch)\w*", re.I)
 NUMBER = re.compile(r"\d")

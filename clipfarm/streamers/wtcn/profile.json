@@ -4,9 +4,9 @@
   "mode": "split",
   "box": [
    0.0,
-   0.7083,
-   0.2219,
-   0.2917
+   0.7889,
+   0.1812,
+   0.2111
   ],
   "face": [
    0.0807,
@@ -93,6 +93,6 @@
   "avatar": "art/avatar.img",
   "banner": "art/banner.img"
  },
- "updated": "2026-11-17T01:39:42+00:00",
+ "updated": "2026-11-17T01:59:42+00:00",
  "language_detected": "tr"
 }

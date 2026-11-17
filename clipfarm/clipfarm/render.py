@@ -34,8 +34,12 @@ def media_base() -> str:
         from starlette.staticfiles import StaticFiles
 
         settings.ensure()
+        from starlette.middleware import Middleware
+        from starlette.middleware.cors import CORSMiddleware
+
         app = Starlette(routes=[Mount("/work", StaticFiles(directory=str(settings.work_dir))),
-                                Mount("/assets", StaticFiles(directory=str(ASSETS)))])
+                                Mount("/assets", StaticFiles(directory=str(ASSETS)))],
+                        middleware=[Middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "HEAD"])])
         port = _free_port()
         cfg = uvicorn.Config(app, host="127.0.0.1", port=port, log_level="warning")
         server = uvicorn.Server(cfg)

@@ -57,19 +57,21 @@ def sync_check(final: Path, plan: dict, props: dict) -> dict:
     def norm(x):
         return re.sub(r"[^\w]", "", x.lower())
 
+    import difflib
+
+    a_words = [norm(w) for w, _ in heard]
+    b_words = [norm(w) for w, _ in cap]
+    sm = difflib.SequenceMatcher(a=a_words, b=b_words, autojunk=False)
     diffs = []
-    j = 0
-    for word, t in heard:
-        nw = norm(word)
-        for k in range(j, min(j + 6, len(cap))):
-            if nw and norm(cap[k][0]) == nw and abs(cap[k][1] - t) < 600:
-                diffs.append(cap[k][1] - t)
-                j = k + 1
-                break
+    for blk in sm.get_matching_blocks():
+        for k in range(blk.size):
+            ha, cb = heard[blk.a + k], cap[blk.b + k]
+            if a_words[blk.a + k] and abs(cb[1] - ha[1]) < 700:
+                diffs.append(cb[1] - ha[1])
     if len(diffs) < 4:
         return {"matched": len(diffs), "median_abs_ms": None, "offset_ms": None}
     d = np.array(diffs)
-    return {"matched": len(diffs), "median_abs_ms": round(float(np.median(np.abs(d - 0))), 1),
+    return {"matched": len(diffs), "of": len(cap), "median_abs_ms": round(float(np.median(np.abs(d))), 1),
             "offset_ms": round(float(np.median(d)), 1), "p90_abs_ms": round(float(np.percentile(np.abs(d), 90)), 1)}
 
 
@@ -161,6 +163,8 @@ def run_qa(clip_dir: Path, props: dict, plan: dict, max_dur: float = 59.5) -> di
     res["checks"]["sync"] = sync
     if sync.get("median_abs_ms") is not None and sync["median_abs_ms"] > 80:
         res["issues"].append(f"caption sync deviation {sync['median_abs_ms']} ms > 80")
+    elif sync.get("median_abs_ms") is None and len(props["captions"]["tokens"]) >= 12 and "error" not in sync:
+        res["issues"].append("caption sync could not be verified (too few matching words)")
     # frames: faces vs captions, safe area
     import cv2
 
@@ -174,6 +178,8 @@ def run_qa(clip_dir: Path, props: dict, plan: dict, max_dur: float = 59.5) -> di
             continue
         sc = layout.OUT_W / img.shape[1]
         faces = [[v * sc for v in f["box"]] for f in layout.detect_faces(img) if f["score"] > 0.8]
+        if props["layout"]["mode"] == "split":  # the streamer is in the facecam panel; game characters don't count
+            faces = [f for f in faces if f[1] + f[3] / 2 < props["layout"]["topH"]]
         for r in caption_rects(props, t * 1000):
             for f in faces:
                 if _overlap(r, f) > 0.15:

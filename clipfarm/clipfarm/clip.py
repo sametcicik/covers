@@ -73,7 +73,10 @@ def build(job: dict, moment: dict, clip_dir: Path, hq: dict, profile: dict, word
     total = fsegs[-1]["outEnd"]
 
     # captions
-    clip_words = [w for w in words if moment["start"] - 3 <= w["s"] <= moment["end"] + 3]
+    from .transcribe import clean_words
+
+    clip_words = clean_words([w for w in words if moment["start"] - 3 <= w["s"] <= moment["end"] + 3],
+                             profile.get("language_detected") or profile.get("language"))
     scores = cap.emphasis_scores(clip_words, moment.get("emphasis") or [],
                                  (profile.get("dictionary") or {}).get("terms", []), tuple(moment["peak"]))
     ow = out_words(clip_words, fsegs, fps, scores)

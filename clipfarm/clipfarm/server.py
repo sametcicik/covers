@@ -24,6 +24,10 @@ from .util import read_json, write_json
 
 log = logging.getLogger("clipfarm")
 app = FastAPI(title="ClipFarm")
+from fastapi.middleware.cors import CORSMiddleware  # noqa: E402
+
+# the Remotion renderer (headless Chrome on its own origin) loads fonts/SFX from this server
+app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_methods=["GET", "HEAD"])
 settings.ensure()
 
 # ------------------------------------------------------------------ job runner (one heavy job at a time)

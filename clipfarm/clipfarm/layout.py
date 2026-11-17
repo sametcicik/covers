@@ -92,7 +92,13 @@ def _sample_frames(video: Path, t_start: float | None, t_end: float | None, n: i
 
 
 def _edge_box(E: np.ndarray, face: list[float], W: int, H: int) -> list[float] | None:
-    """Find the persistent rectangle (overlay frame) around the face from an averaged edge map."""
+    """Find the overlay rectangle around the face from an averaged (persistent) edge map.
+
+    Per side we collect sharp, isolated line candidates (plus the frame border), then pick the combination
+    that best explains a webcam overlay: strong edges, a common camera aspect, the face in the upper-middle.
+    """
+    import itertools
+
     fx, fy, fw, fh = face
     cx, cy = fx + fw / 2, fy + fh / 2
 
@@ -106,34 +112,51 @@ def _edge_box(E: np.ndarray, face: list[float], W: int, H: int) -> list[float] |
 
     ys0, ys1 = int(fy - 0.6 * fh), int(fy + 1.8 * fh)
     xs0, xs1 = int(fx - 0.8 * fw), int(fx + 1.8 * fw)
-    best = {}
-    for side, rng, fn, args in (
-        ("l", range(max(1, int(cx - 5 * fw)), int(fx - 0.15 * fw)), col_score, (ys0, ys1)),
-        ("r", range(int(fx + fw * 1.15), min(W - 1, int(cx + 5 * fw))), col_score, (ys0, ys1)),
-        ("t", range(max(1, int(cy - 4 * fh)), int(fy - 0.2 * fh)), row_score, (xs0, xs1)),
-        ("b", range(int(fy + fh * 1.3), min(H - 1, int(cy + 5 * fh))), row_score, (xs0, xs1)),
+    cands: dict[str, list[tuple[float, float]]] = {}
+    for side, rng, fn, args, border in (
+        ("l", range(int(fx - 0.15 * fw), max(1, int(cx - 6 * fw)), -1), col_score, (ys0, ys1), 0),
+        ("r", range(int(fx + fw * 1.15), min(W - 1, int(cx + 6 * fw))), col_score, (ys0, ys1), W),
+        ("t", range(int(fy - 0.2 * fh), max(1, int(cy - 5 * fh)), -1), row_score, (xs0, xs1), 0),
+        ("b", range(int(fy + fh * 1.3), min(H - 1, int(cy + 6 * fh))), row_score, (xs0, xs1), H),
     ):
-        scores = [(fn(v, *args), v) for v in rng]
-        if scores:
-            s, v = max(scores)
-            best[side] = (s, v)
-    th = 0.32
-    l = best.get("l", (0, 0))
-    r = best.get("r", (0, W))
-    t = best.get("t", (0, 0))
-    b = best.get("b", (0, H))
-    x0 = l[1] if l[0] > th else (0 if fx < 4.5 * fw else None)
-    x1 = r[1] if r[0] > th else (W if W - (fx + fw) < 4.5 * fw else None)
-    y0 = t[1] if t[0] > th else (0 if fy < 3.5 * fh else None)
-    y1 = b[1] if b[0] > th else (H if H - (fy + fh) < 4 * fh else None)
-    if None in (x0, x1, y0, y1):
+        vals = list(rng)
+        lst: list[tuple[float, float]] = []
+        if vals:
+            prof = np.array([fn(v, *args) for v in vals])
+            for k, v in enumerate(vals):
+                sc = prof[k]
+                if sc < 0.18 or (k + 1 < len(prof) and prof[k + 1] > sc) or (k > 0 and prof[k - 1] > sc):
+                    continue
+                near = np.concatenate([prof[max(0, k - 8):max(0, k - 3)], prof[k + 4:k + 9]])
+                prom = sc - (float(near.mean()) if len(near) else 0.0)
+                if prom >= 0.06:
+                    lst.append((float(sc), float(v)))
+            nearest = lst[:3]  # scan order = distance from the face
+            strongest = sorted(lst, key=lambda z: -z[0])[:5]
+            lst = list(dict.fromkeys(nearest + strongest))
+        reach = 6 * (fw if side in "lr" else fh)
+        if abs(border - (cx if side in "lr" else cy)) <= reach:
+            lst.append((0.45, float(border)))  # frame edge counts as a solid border
+        cands[side] = lst
+    if any(not cands[k] for k in "lrtb"):
         return None
-    bw, bh = x1 - x0, y1 - y0
-    if bw < fw * 1.3 or bh < fh * 1.3 or bw * bh > 0.5 * W * H:
-        return None
-    if not (0.6 <= bw / bh <= 2.6):
-        return None
-    return [float(x0), float(y0), float(bw), float(bh)]
+    aspects = (16 / 9, 4 / 3, 3 / 2, 1.0)
+    best, best_sc = None, -1e9
+    for (ls, lv), (rs, rv), (ts, tv), (bs, bv) in itertools.product(cands["l"], cands["r"], cands["t"], cands["b"]):
+        bw, bh = rv - lv, bv - tv
+        if bw < fw * 1.6 or bh < fh * 1.6 or bw * bh > 0.45 * W * H:
+            continue
+        a = bw / bh
+        rel_x = (cx - lv) / bw
+        rel_y = (cy - tv) / bh
+        fr = fh / bh
+        sc = (ls + rs + ts + bs)
+        sc -= 1.6 * min(abs(np.log(a / k)) for k in aspects)
+        sc -= 2.2 * abs(rel_y - 0.5) + 1.4 * abs(rel_x - 0.5)
+        sc -= 3.0 * max(0.0, 0.14 - fr) + 3.0 * max(0.0, fr - 0.55)
+        if sc > best_sc:
+            best, best_sc = [lv, tv, bw, bh], sc
+    return [float(v) for v in best] if best else None
 
 
 def detect_layout(video: Path, t_start: float | None = None, t_end: float | None = None, n: int = 48) -> dict:
@@ -203,6 +226,8 @@ def facecam_crop(layout: dict, src_w: int, src_h: int, top_ratio: float = TOP_RA
     p = panel_sizes(top_ratio)
     aspect = OUT_W / p["top_h"]
     bx, by, bw, bh = layout["box"]
+    # inset 3 %: box edges come from a 360p preview (+-2 px) and overlays often have a border
+    bx, by, bw, bh = bx + bw * 0.03, by + bh * 0.03, bw * 0.94, bh * 0.94
     fx, fy, fw, fh = layout["face"]
     bwp, bhp = bw * src_w, bh * src_h
     if bwp / bhp > aspect:

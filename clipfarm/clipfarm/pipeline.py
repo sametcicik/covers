@@ -163,8 +163,21 @@ def run_job(url: str, n_clips: int = 10, start: float | None = None, end: float 
             win_all = windows + extra
         else:
             win_all = windows
-        cands = moments.find_moments(words, win_all, sig, lang, prof.get("display_name") or m["channel"], n_clips,
-                                     min_dur=18, max_dur=max_d - 6)
+        if m["kind"] == "clip" or seconds < 70:
+            # a platform clip is already a moment: keep it whole (sentence-snapped), find its peak
+            ws_all = [w for w in words if t0 <= w["s"] <= t0 + seconds]
+            if ws_all:
+                mo = {"start": ws_all[0]["s"], "end": ws_all[-1]["e"], "score": 75.0, "category": "reaction",
+                      "why": "Platformda zaten klip olarak işaretlenmiş an" if lang == "tr" else "Already clipped on the platform",
+                      "text": " ".join(w["w"] for w in ws_all), "source": "platform-clip", "signals": {}}
+                mo = moments.snap_bounds(mo, words, sig, max_d)
+                mo["peak"] = list(moments.find_peak(mo, words, sig))
+                cands = [mo]
+            else:
+                cands = []
+        else:
+            cands = moments.find_moments(words, win_all, sig, lang, prof.get("display_name") or m["channel"], n_clips,
+                                         min_dur=18, max_dur=max_d - 6)
         write_json(jd / "analysis" / "moments.json", cands)
         prog("moments", 1.0, f"{len(cands)} aday")
 

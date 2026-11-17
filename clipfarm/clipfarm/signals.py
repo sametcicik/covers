@@ -81,7 +81,7 @@ def chat_signals(msgs: list[dict], t0: float, seconds: int) -> dict:
                 hype[i] += w
     k = np.ones(5) / 5
     rate = np.convolve(cnt, k, mode="same")
-    dense = len(msgs) > 60 and sum(m.get("w", 1) for m in msgs) / max(1, seconds / 60) >= 3  # >= 3 msg/min
+    dense = len(msgs) > 120 and sum(m.get("w", 1) for m in msgs) / max(1, seconds / 60) >= 10  # >= 10 msg/min
     ratez = _robust_z(rate, 300) if dense else np.zeros(seconds)
     react = np.convolve(emo + 2 * laugh + 1.5 * hype, k, mode="same")
     reactz = _robust_z(react, 300) if dense else np.zeros(seconds)

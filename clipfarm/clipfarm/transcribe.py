@@ -39,6 +39,22 @@ def speech_regions(audio: np.ndarray, sr: int = 16000) -> list[list[float]]:
 # ------------------------------------------------------------------ dictionary
 
 
+LATIN_LANGS = {"tr", "en", "de", "fr", "es", "it", "pt", "nl", "pl", "sv", "da", "no", "fi", "cs", "ro", "hu", "az", "id"}
+FOREIGN_SCRIPT = re.compile(r"[\u0370-\u03ff\u0400-\u04ff\u0590-\u06ff\u0e00-\u0e7f\u3000-\u30ff\u3400-\u9fff\uac00-\ud7af\uff00-\uffef]")
+
+
+def clean_words(words: list[dict], lang: str | None) -> list[dict]:
+    """Drop Whisper script hallucinations (e.g. kana inside Turkish) for Latin-script languages."""
+    if (lang or "") not in LATIN_LANGS:
+        return words
+    out = []
+    for w in words:
+        t = FOREIGN_SCRIPT.split(w["w"])[0].strip() if FOREIGN_SCRIPT.search(w["w"]) else w["w"]
+        if t and re.search(r"\w", t):
+            out.append({**w, "w": t})
+    return out
+
+
 def _norm(w: str) -> str:
     return re.sub(r"[^\wçğıöşüâîû]", "", tr_lower(w))
 
@@ -138,7 +154,9 @@ def transcribe(audio_path: Path, offset: float, ranges: list[tuple[float, float]
                            "p": round(w.probability, 3)})
             if not sw:
                 continue
-            sw = dic.apply_words(sw)
+            sw = clean_words(dic.apply_words(sw), lang)
+            if not sw:
+                continue
             # drop obvious hallucinations: very low prob long runs or repeated phrases
             if np.mean([x["p"] for x in sw]) < 0.25 and len(sw) > 3:
                 continue
@@ -154,7 +172,10 @@ def transcribe(audio_path: Path, offset: float, ranges: list[tuple[float, float]
             w["e"] = round(w["s"] + 0.08, 3)
         if i + 1 < len(words) and w["e"] > words[i + 1]["s"]:
             w["e"] = max(w["s"] + 0.04, words[i + 1]["s"])
-    speech = [[round(x + offset, 3), round(y + offset, 3)] for x, y in speech_regions(audio, sr)]
+    speech = []
+    for a, b in ranges:  # VAD speech map only where we transcribed
+        speech += [[round(x + a + offset, 3), round(y + a + offset, 3)]
+                   for x, y in speech_regions(audio[int(a * sr):int(b * sr)], sr)]
     return {"language": lang, "model": hw.whisper_model, "ranges": [[a + offset, b + offset] for a, b in ranges],
             "words": words, "segments": segments, "speech": speech}
 
@@ -162,11 +183,17 @@ def transcribe(audio_path: Path, offset: float, ranges: list[tuple[float, float]
 def merge_transcripts(old: dict | None, new: dict) -> dict:
     if not old:
         return new
-    words = {(w["s"], w["w"]): w for w in old.get("words", [])}
-    for w in new["words"]:
-        words[(w["s"], w["w"])] = w
+    rng = new["ranges"]
+
+    def covered(t: float) -> bool:
+        return any(a - 0.05 <= t <= b + 0.05 for a, b in rng)
+
+    # new ranges replace whatever was transcribed there before (no double words on overlaps)
+    words = [w for w in old.get("words", []) if not covered(w["s"])] + new["words"]
+    segs = [x for x in old.get("segments", []) if not covered(x["s"])] + new["segments"]
     out = dict(new)
-    out["words"] = sorted(words.values(), key=lambda w: w["s"])
-    out["segments"] = sorted(old.get("segments", []) + new["segments"], key=lambda s: s["s"])
+    out["words"] = sorted(words, key=lambda w: w["s"])
+    out["segments"] = sorted(segs, key=lambda x: x["s"])
     out["ranges"] = old.get("ranges", []) + new["ranges"]
+    out["speech"] = sorted(old.get("speech", []) + new.get("speech", []))
     return out

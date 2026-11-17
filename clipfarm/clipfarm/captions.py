@@ -76,6 +76,10 @@ def _clean(w: str) -> str:
     return re.sub(r"[^\wçğıöşüÇĞİÖŞÜ%]", "", w)
 
 
+FILLERS = {"ve", "bir", "bu", "şu", "o", "da", "de", "ki", "mi", "mı", "ne", "ya", "yani", "abi", "aga", "lan", "kanka",
+           "işte", "hani", "şey", "the", "a", "an", "and", "to", "of", "bro", "dude", "like", "yeah", "so", "uh", "um"}
+
+
 def emphasis_scores(words: list[dict], llm_words: list[str], dictionary: list[str], peak: tuple[float, float]) -> list[float]:
     llm_set = {tr_lower(_clean(w)) for ws in llm_words for w in ws.split()}
     dic = {tr_lower(_clean(t)) for t in dictionary}
@@ -112,7 +116,7 @@ def emphasis_scores(words: list[dict], llm_words: list[str], dictionary: list[st
             s += 0.6  # phrase-final words carry the stress in Turkish and English
         if i > 0 and tr_lower(_clean(words[i - 1]["w"])) == lc:
             s -= 1.5  # repetitions ("bitti bitti") only once
-        if lc in {"ve", "bir", "bu", "şu", "o", "da", "de", "the", "a", "an", "and", "to", "of", "ki", "mi", "ne"}:
+        if lc in FILLERS:
             s = 0
         out.append(s)
     return out
