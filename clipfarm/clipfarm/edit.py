@@ -17,8 +17,21 @@ def _speech_level(sig: Signals, a: float, b: float) -> float:
     return float(np.percentile(sig.db(a, b), 70))
 
 
+MIN_TOTAL = 18.0  # don't trim a clip below this (target 20-45 s)
+
+
 def plan_segments(m: dict, words: list[dict], sig: Signals, hook: bool, max_total: float) -> list[dict]:
-    """Return segments in absolute VOD seconds: [{"s","e","kind"}]. Cold open first if needed."""
+    """Return segments in absolute VOD seconds: [{"s","e","kind"}]. Cold open first if needed.
+
+    Trimming relaxes step by step when it would push the clip under MIN_TOTAL."""
+    for level in (0, 1, 2):
+        segs = _plan_segments(m, words, sig, hook, max_total, level)
+        if sum(x["e"] - x["s"] for x in segs) >= MIN_TOTAL or m["end"] - m["start"] < MIN_TOTAL:
+            break
+    return segs
+
+
+def _plan_segments(m: dict, words: list[dict], sig: Signals, hook: bool, max_total: float, relax: int) -> list[dict]:
     cs, ce = m["start"], m["end"]
     ps, pe = m["peak"]
     ws = [w for w in words if cs <= w["s"] < ce]
@@ -30,8 +43,13 @@ def plan_segments(m: dict, words: list[dict], sig: Signals, hook: bool, max_tota
             continue
         gdb = sig.db(a["e"] + 0.05, b["s"] - 0.05)
         if len(gdb) and np.percentile(gdb, 80) > lvl - 7:
-            continue  # laughter / reaction / game sound in the gap: keep it
-        keep = KEEP_GAP
+            # laughter / reaction / game event in the gap: keep it, but cap long stretches without speech
+            if relax == 0 and g > 4.5 and not (a["e"] <= ps <= b["s"]):
+                cuts.append((a["e"] + 2.5, b["s"] - 1.0))
+            continue
+        if relax >= 2 and g < 1.2:
+            continue
+        keep = KEEP_GAP if relax == 0 else 0.35
         before_punch = abs(b["s"] - ps) < 0.35 or (ps - 3.0 <= b["s"] <= ps + 0.3)
         if before_punch or a["w"].endswith("?"):
             keep = min(g, 0.7)  # comic timing: keep the beat before the punchline / after a question

@@ -59,7 +59,7 @@ The brief asks for the current, more editorial feel, and the engine adds that on
 
 - **Canvas:** 1080x1920. **Safe width:** 840 px, centred (x 120–960), clear of the right-hand action column.
   **Vertical safe band:** 15 %–72 % of the height.
-- **Sizes:** neutral 92 px × font `size_scale` normalisation; emphasis × 1.42.
+- **Sizes:** neutral 92 px × font `size_scale` normalisation; emphasis × 1.42; the first page of every clip × 1.3 (big opening page).
   - Real glyph advances (fontTools) fit each line into the 840 px width; minimum 52 px.
 - **Stroke:** `max(6px, 0.12 × size)` with `paint-order: stroke fill`, so the outline sits outside the glyph.
   **Shadow:** `0 0.06em 0.2em rgba(0,0,0,.5)`.

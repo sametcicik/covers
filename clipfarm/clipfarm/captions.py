@@ -139,8 +139,13 @@ def censor(word: str, profanity: bool = True) -> str:
 # ------------------------------------------------------------------ paging
 
 
+def upper_for(lang: str | None):
+    """Locale-aware upper-casing: dotted/dotless i only for Turkish and Azerbaijani."""
+    return tr_upper if (lang or "tr") in ("tr", "az") else str.upper
+
+
 def build_pages(out_words: list[dict], style: str, palette: dict, seed: int, upper: bool | None = None,
-                censor_profanity: bool = False) -> dict:
+                censor_profanity: bool = False, lang: str | None = None) -> dict:
     """out_words: [{"w","startMs","endMs","seg","emph"(score),"sent_end"}] already in output time."""
     preset = STYLE_PRESETS.get(style, STYLE_PRESETS["dynamic"])
     available = fonts()
@@ -202,9 +207,9 @@ def build_pages(out_words: list[dict], style: str, palette: dict, seed: int, upp
             is_e = has_emph and k == best
             fid = efont if is_e else neutral
             f_up = fonts()[fid].get("uppercase", False) or (up and not is_e)
-            items.append({"text": tr_upper(txt) if f_up else txt, "startMs": w["startMs"], "endMs": w["endMs"],
+            items.append({"text": upper_for(lang)(txt) if f_up else txt, "startMs": w["startMs"], "endMs": w["endMs"],
                           "emph": is_e, "font": fid})
-        lines = _layout_lines(items)
+        lines = _layout_lines(items, boost=1.3 if pi == 0 else 1.0)  # big first page: motion in the first second
         rot = 0.0
         if has_emph:
             rot = round(rng.choice([-1, 1]) * rng.uniform(2.0, 4.5), 2)
@@ -219,11 +224,11 @@ def build_pages(out_words: list[dict], style: str, palette: dict, seed: int, upp
     return {"style": style, "pages": pages, "fonts": [font_css(f) for f in used], "neutralFont": neutral}
 
 
-def _layout_lines(items: list[dict]) -> list[dict]:
+def _layout_lines(items: list[dict], boost: float = 1.0) -> list[dict]:
     """Split into 1-2 lines and fit pixel sizes to SAFE_W using real glyph advances."""
     def px_for(it):
         f = fonts()[it["font"]]
-        base = BASE_PX * (EMPH_RATIO if it["emph"] else 1.0)
+        base = BASE_PX * boost * (EMPH_RATIO if it["emph"] else 1.0)
         return base / max(0.6, f.get("size_scale", 1.0)) * (1.0 if f.get("size_scale", 1) >= 0.95 else 0.98)
 
     for it in items:

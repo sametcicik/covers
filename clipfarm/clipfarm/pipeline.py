@@ -341,6 +341,7 @@ def rerender(job_id: str, clip_id: str, new_settings: dict, progress_cb=None) ->
     prog = Progress(progress_cb)
     res = build_render_qa(job, prof, mo, cd, hq, tr["words"], sig, lay, prev, tr.get("language", "tr"), st, prog,
                           f"{clip_id}")
+    job = load_job(job_id)  # re-read: another re-render may have finished meanwhile
     for c in job.get("clips", []):
         if c["id"] == clip_id:
             c.update(res)

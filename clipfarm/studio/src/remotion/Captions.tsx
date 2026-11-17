@@ -23,7 +23,8 @@ const Word: React.FC<{
 	textColor: string;
 	stroke: string;
 	rotate: number;
-}> = ({text, font, size, emph, startFrame, color, textColor, stroke, rotate}) => {
+	lang: string;
+}> = ({text, font, size, emph, startFrame, color, textColor, stroke, rotate, lang}) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
 	const local = frame - startFrame;
@@ -43,7 +44,7 @@ const Word: React.FC<{
 	const strokeW = Math.max(6, size * 0.12);
 	return (
 		<span
-			lang="tr"
+			lang={lang}
 			style={{
 				display: 'inline-block',
 				fontFamily: font ? `'${font.family}'` : 'sans-serif',
@@ -69,11 +70,12 @@ const Word: React.FC<{
 	);
 };
 
-const Page: React.FC<{page: CaptionPage; fonts: Record<string, FontDef>; palette: Props['palette']; y: number}> = ({
+const Page: React.FC<{page: CaptionPage; fonts: Record<string, FontDef>; palette: Props['palette']; y: number; lang: string}> = ({
 	page,
 	fonts,
 	palette,
 	y,
+	lang,
 }) => {
 	const frame = useCurrentFrame();
 	const {fps} = useVideoConfig();
@@ -112,6 +114,7 @@ const Page: React.FC<{page: CaptionPage; fonts: Record<string, FontDef>; palette
 							textColor={palette.text}
 							stroke={palette.stroke}
 							rotate={page.rotate}
+							lang={lang}
 						/>
 					))}
 				</div>
@@ -153,11 +156,11 @@ const Classic: React.FC<Props & {fonts: Record<string, FontDef>; neutral: string
 				textShadow: '0 5px 16px rgba(0,0,0,0.5)',
 				color: palette.text,
 			}}
-			lang="tr"
+			lang={captions.lang ?? 'tr'}
 		>
 			{page.tokens.map((t, i) => (
 				<span key={i} style={{color: ms >= t.fromMs && ms < t.toMs ? palette.accent : palette.text, whiteSpace: 'pre'}}>
-					{f?.upper ? t.text.toLocaleUpperCase('tr-TR') : t.text}
+					{f?.upper ? t.text.toLocaleUpperCase(captions.lang ?? 'tr') : t.text}
 				</span>
 			))}
 		</div>
@@ -180,5 +183,5 @@ export const Captions: React.FC<Props> = ({captions, palette}) => {
 	}
 	const ms = (frame / fps) * 1000;
 	const page = captions.pages.find((p) => ms >= p.startMs - 1 && ms < p.endMs);
-	return <AbsoluteFill>{page ? <Page page={page} fonts={fonts} palette={palette} y={captions.y} /> : null}</AbsoluteFill>;
+	return <AbsoluteFill>{page ? <Page page={page} fonts={fonts} palette={palette} y={captions.y} lang={captions.lang ?? 'tr'} /> : null}</AbsoluteFill>;
 };

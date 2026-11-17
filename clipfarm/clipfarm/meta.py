@@ -18,17 +18,20 @@ Return JSON only: {"titles":["","",""],"description":"","hashtags":["#..."]}"""
 
 
 def _quote(text: str, n: int = 52) -> str:
+    from .captions import SLURS
     from .moments import PROFANITY
 
     sents = [x.strip() for x in re.split(r"(?<=[.!?])\s+", text.strip()) if x.strip()]
 
     def rank(s: str):
         nw = len(s.split())
-        return (0 if PROFANITY.search(s) else 1, 1 if 3 <= nw <= 10 else 0, s.count("!") + s.count("?"),
+        bad = PROFANITY.search(s) or SLURS.search(s)
+        return (0 if bad else 1, 1 if 3 <= nw <= 10 else 0, s.count("!") + s.count("?"),
                 -abs(len(s) - 38))
 
     best = max(sents, key=rank) if sents else text
     best = best.strip().strip('"')
+    best = best[:1].upper() + best[1:] if best else best
     if len(best) > n:
         best = best[: n - 1].rsplit(" ", 1)[0] + "…"
     return best

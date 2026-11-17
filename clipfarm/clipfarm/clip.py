@@ -86,8 +86,9 @@ def build(job: dict, moment: dict, clip_dir: Path, hq: dict, profile: dict, word
             w["startMs"] = max(0, w["startMs"] + off)
             w["endMs"] = max(w["startMs"] + 40, w["endMs"] + off)
     palette = {**(profile.get("palette") or {}), **(st.get("palette") or {})}
+    lang = profile.get("language") if profile.get("language") not in (None, "", "auto") else profile.get("language_detected")
     pages = cap.build_pages(ow, st["caption_style"], palette, seed, st.get("upper"),
-                            bool(camp.get("censor_profanity")))
+                            bool(camp.get("censor_profanity")), lang)
     # emphasis words -> frames for effect planning
     emph = []
     for p in pages["pages"]:
@@ -135,6 +136,7 @@ def build(job: dict, moment: dict, clip_dir: Path, hq: dict, profile: dict, word
         "effects": {"zooms": fx["zooms"], "base": fx["base"], "shakes": fx["shakes"], "flashes": fx["flashes"],
                     "enabled": bool(st["effects"])},
         "captions": {"enabled": bool(st["captions"]), "style": st["caption_style"], "y": y, "pages": pages["pages"],
+                     "lang": lang or "tr",
                      "tokens": cap.caption_tokens(ow), "fonts": pages["fonts"], "neutralFont": pages["neutralFont"]},
         "fontBaseUrl": "", "sfxBaseUrl": "",
         "sfx": [{"cat": e["cat"], "file": e["file"], "start": e["start"], "gainDb": -12.0} for e in fx["sfx"]],

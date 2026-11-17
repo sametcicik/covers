@@ -77,6 +77,7 @@ export type ClipProps = {
 	captions: {
 		enabled: boolean;
 		style: string;
+		lang?: string;
 		y: number; // centre of the caption block in px
 		pages: CaptionPage[];
 		tokens: Caption[];
